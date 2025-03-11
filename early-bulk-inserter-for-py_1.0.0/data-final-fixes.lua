@@ -1,8 +1,4 @@
--- 获取集装机械臂的配方
-local bulk_inserter_recipe = data.raw.recipe["bulk-inserter"]
-
--- 修改配方的成分和结果，使其更容易在前期获得
-bulk_inserter_recipe.ingredients = {
+data.raw.recipe["bulk-inserter"].ingredients = {
     {
         type = "item",
         name = "small-parts-01",
@@ -14,18 +10,76 @@ bulk_inserter_recipe.ingredients = {
         amount = 5
     }
 }
--- bulk_inserter_recipe.result.count = 1  -- 每次制作获得1个集装机械臂
 
--- 获取相关的科技
-local bulk_inserter_tech = data.raw.technology["bulk-inserter"]
-
--- 修改科技的效果和研究条件
-bulk_inserter_tech.effects = {
+data.raw.technology["bulk-inserter"].effects = {
     {type = "unlock-recipe", recipe = "bulk-inserter"}
 }
-bulk_inserter_tech.prerequisites = {"engine"}
-bulk_inserter_tech.unit = {
+data.raw.technology["bulk-inserter"].prerequisites = {"engine"}
+data.raw.technology["bulk-inserter"].unit = {
     count = 50,
     ingredients = {{"automation-science-pack", 1}},
     time = 30
+}
+
+data.raw.recipe["mdrn-loader"].ingredients = {    
+    {
+        type = "item",
+        name = "small-parts-01",
+        amount = 2
+    },
+    {
+        type = "item",
+        name = "iron-plate",
+        amount = 5
+    }
+}
+data.raw.technology["mdrn-loader"].effects = {
+    {type = "unlock-recipe", recipe = "mdrn-loader"}
+}
+data.raw.technology["mdrn-loader"].prerequisites = {"steam-power"}
+data.raw.technology["mdrn-loader"].unit = {
+    count = 5,
+    ingredients = {{"automation-science-pack", 1}},
+    time = 10
+}
+
+
+data.raw.recipe["splitter"].ingredients = {    
+    {
+        type = "item",
+        name = "small-parts-01",
+        amount = 2
+    },
+    {
+        type = "item",
+        name = "iron-plate",
+        amount = 5
+    }
+}
+data.raw.technology["logistics"].effects = {
+    {type = "unlock-recipe", recipe = "splitter"}
+}
+data.raw.technology["logistics"].prerequisites = {"steam-power"}
+data.raw.technology["logistics"].unit = {
+    count = 5,
+    ingredients = {{"automation-science-pack", 1}},
+    time = 10
+}
+
+
+data.raw.recipe["selector-combinator"].ingredients = {
+    {
+        type = "item",
+        name = "iron-plate",
+        amount = 1
+    }
+}
+data.raw.technology["advanced-combinators"].effects = {
+    {type = "unlock-recipe", recipe = "selector-combinator"}
+}
+data.raw.technology["advanced-combinators"].prerequisites = {"steam-power"}
+data.raw.technology["advanced-combinators"].unit = {
+    count = 5,
+    ingredients = {{"automation-science-pack", 1}},
+    time = 10
 }
