@@ -2,7 +2,7 @@ data:extend({
   {
     type = "technology",
     name = "tungsten-ammo",
-    icon = "__tungsten-munition__/graphics/tungsten-ammo.png",
+    icon = "__ap-adjustment-for-onlyNauvis__/graphics/tungsten-ammo.png",
     icon_size = 256,
     effects =
     {

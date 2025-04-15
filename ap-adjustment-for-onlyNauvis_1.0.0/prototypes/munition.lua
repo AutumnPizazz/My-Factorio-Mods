@@ -4,7 +4,7 @@ data:extend({
   {
     type = "ammo",
     name = "tungsten-rounds-magazine",
-    icon = "__tungsten-munition__/graphics/tungsten-rounds-magazine.png",
+    icon = "__ap-adjustment-for-onlyNauvis__/graphics/tungsten-rounds-magazine.png",
     ammo_category = "bullet",
     ammo_type =
     {
@@ -51,7 +51,7 @@ data:extend({
   {
     type = "ammo",
     name = "tungsten-cannon-shell",
-    icon = "__tungsten-munition__/graphics/tungsten-cannon-shell.png",
+    icon = "__ap-adjustment-for-onlyNauvis__/graphics/tungsten-cannon-shell.png",
     ammo_category = "cannon-shell",
     ammo_type =
     {
