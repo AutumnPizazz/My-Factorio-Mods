@@ -1,0 +1,11 @@
+{
+    "name": "ap-adjustment-for-onlyNauvis",
+    "version": "1.0.0",
+    "title": "ap-adjustment-for-onlyNauvis",
+    "author": "AutumnPizazz",
+    "factorio_version": "2.0",
+    "dependencies": [
+        "base >= 2.0",
+        "space-age >= 2.0"
+    ]
+}
