@@ -1,0 +1,11 @@
+{
+  "name": "Pizazz-CN",
+  "version": "0.2.3",
+  "title": "Pizazz-CN",
+  "author": "SpringPizazz",
+  "dependencies": [
+    "base >= 2.0"
+  ],
+  "description": "SpringPizazz的自用汉化。仅限简体中文！ONLY CHINESE!",
+  "factorio_version": "2.1"
+}
