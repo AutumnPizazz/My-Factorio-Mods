@@ -5,9 +5,10 @@
 `info.json` 的 version 字段与 `changelog.txt` 的顶部条目里。这样每次发版不会因为
 "目录改名" 而在 git 里产生一长串删除/新增记录。
 
-目前提供两个子命令：
+目前提供三个子命令：
   list    列出仓库里所有模组（目录名 / info.json 里的 name、version / 有无 changelog、thumbnail）
   bump    提升版本号：改写 info.json 的 version，并在 changelog.txt 顶部插入待填写的骨架
+  pack    打包成可上传的 <name>_<version>.zip（zip 内顶层目录同名），并做打包后自检
 
 示例：
   python3 tools/modtool.py list
@@ -16,6 +17,9 @@
   python3 tools/modtool.py bump mods/Pizazz-CN 0.3.0     # 直接指定版本号
   python3 tools/modtool.py bump --all patch              # 所有模组各进一个 patch
   python3 tools/modtool.py bump Pizazz-CN patch --dry-run
+  python3 tools/modtool.py pack Pizazz-CN                # -> dist/Pizazz-CN_0.2.3.zip
+  python3 tools/modtool.py pack Pizazz-CN --out "<游戏 mods 目录>"   # 顺手装进本地游戏测试
+  python3 tools/modtool.py pack --all --dry-run
 
 约定：
   * 版本号必须是纯数字点分（1~4 段，如 "1.0" / "0.2.2" / "2.1.0.3"）；本工具不会自作主张
@@ -23,6 +27,10 @@
   * 只改 info.json 里 version 那一行的字符串，其余格式（缩进、顺序、末尾换行）原样保留，
     因此 diff 永远只有一行。
   * changelog.txt 已存在同版本条目时默认拒绝覆盖；确实要重写用 --force。
+  * pack 会检查「目录名 == info.json 的 name」以及「changelog.txt 顶部版本 == info.json 的 version」，
+    不一致时拒绝打包（确认无碍再加 --force）；缺 thumbnail.png / changelog.txt 只警告不拦截。
+  * pack 默认跳过垃圾文件（__pycache__、.pyc、.DS_Store、编辑器临时文件等）；
+    --reproducible 会固定 zip 内的时间戳与权限位，内容不变则产出的 zip 逐字节相同。
 """
 
 from __future__ import annotations
@@ -32,11 +40,18 @@ import datetime as _dt
 import json
 import re
 import sys
+import zipfile
 from pathlib import Path
 
 SEP = "-" * 99  # 与 Factorio 官方 changelog 的分隔线等长
 VERSION_RE = re.compile(r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?$')
 INFO_VERSION_RE = re.compile(r'("version"\s*:\s*")([^"]*)(")')
+CHANGELOG_VERSION_RE = re.compile(r'^Version:\s*(\S+)\s*$', re.MULTILINE)
+
+# 打包时要跳过的目录/文件名与后缀
+JUNK_DIRS = {"__pycache__", ".git", ".idea", ".vscode", ".svn"}
+JUNK_FILES = {".DS_Store", "Thumbs.db", "desktop.ini"}
+JUNK_SUFFIXES = {".pyc", ".pyo", ".bak", ".orig", ".rej", ".tmp", ".swp", ".swo", ".log"}
 
 
 class ModToolError(Exception):
@@ -232,6 +247,151 @@ def cmd_bump(root: Path, args: argparse.Namespace) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------------------
+# pack：打包成可上传的 zip
+# --------------------------------------------------------------------------------------
+def changelog_top_version(path: Path) -> str | None:
+    """取 changelog.txt 里最上面那条 `Version:`（文件本身是按新→旧排列的）。"""
+    m = CHANGELOG_VERSION_RE.search(read_text(path))
+    return m.group(1) if m else None
+
+
+def collect_mod_files(mod: dict) -> tuple[list[Path], list[str]]:
+    """收集要打包的文件（按相对路径排序），并返回顺带的警告。"""
+    files: list[Path] = []
+    warnings: list[str] = []
+    for path in sorted(mod["dir"].rglob("*")):
+        rel = path.relative_to(mod["dir"])
+        if any(part in JUNK_DIRS for part in rel.parts):
+            continue
+        if path.is_dir():
+            continue
+        if path.is_symlink():
+            warnings.append(f"跳过符号链接 {rel.as_posix()}")
+            continue
+        if path.name in JUNK_FILES or path.name.startswith("."):
+            continue
+        if path.suffix.lower() in JUNK_SUFFIXES:
+            continue
+        if path.stat().st_size == 0:
+            warnings.append(f"{rel.as_posix()} 是 0 字节空文件")
+        files.append(path)
+    return files, warnings
+
+
+def write_zip(target: Path, mod: dict, files: list[Path], top: str, reproducible: bool) -> None:
+    """把 files 打进 target，zip 内路径统一为 <top>/<相对路径>。"""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as zf:
+        for path in files:
+            arcname = f"{top}/{path.relative_to(mod['dir']).as_posix()}"
+            if reproducible:
+                info = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.create_system = 3          # 固定为 Unix，跨平台字节一致
+                info.external_attr = 0o644 << 16
+                zf.writestr(info, path.read_bytes())
+            else:
+                zf.write(path, arcname)
+
+
+def verify_zip(target: Path, mod: dict, top: str, expected_count: int) -> list[str]:
+    """重新读一遍刚写出的 zip：CRC、顶层目录、文件数、info.json 内容。"""
+    problems: list[str] = []
+    with zipfile.ZipFile(target) as zf:
+        bad = zf.testzip()
+        if bad:
+            problems.append(f"CRC 校验失败：{bad}")
+        names = zf.namelist()
+        if len(names) != expected_count:
+            problems.append(f"文件数不符：zip 内 {len(names)} 个，源目录 {expected_count} 个")
+        outside = [n for n in names if not n.startswith(top + "/")]
+        if outside:
+            problems.append(f"有 {len(outside)} 个条目不在 {top}/ 下，例如 {outside[0]}")
+        try:
+            data = json.loads(zf.read(f"{top}/info.json").decode("utf-8-sig"))
+        except Exception as exc:  # noqa: BLE001 - 自检阶段任何异常都算失败
+            problems.append(f"zip 内 info.json 读不出来：{exc!r}")
+        else:
+            if data.get("name") != mod["name"] or data.get("version") != mod["version"]:
+                problems.append(
+                    f"zip 内 info.json 是 {data.get('name')} {data.get('version')}，"
+                    f"与源目录的 {mod['name']} {mod['version']} 不一致"
+                )
+        if "changelog.txt" not in [n.split("/", 1)[-1] for n in names]:
+            problems.append("zip 里没有 changelog.txt")
+    return problems
+
+
+def cmd_pack(root: Path, args: argparse.Namespace) -> int:
+    mods = discover_mods(root)
+    targets = mods if args.all else [find_mod(mods, args.mod)]
+    out_dir = Path(args.out).expanduser().resolve() if args.out else (root / "dist")
+    failures = 0
+
+    print(f"输出目录：{out_dir}")
+    for m in targets:
+        name, version = m["name"], m["version"]
+        print(f"\n=== {m['dir_name']}  {version}")
+        hard: list[str] = []
+        soft: list[str] = []
+
+        if m["dir_name"] != name:
+            hard.append(f"目录名 {m['dir_name']!r} 与 info.json 的 name {name!r} 不一致")
+        try:
+            parse_version(version)
+        except ModToolError as exc:
+            hard.append(str(exc))
+        if not m["changelog"]:
+            soft.append("没有 changelog.txt")
+        else:
+            top_ver = changelog_top_version(m["changelog"])
+            if top_ver != version:
+                hard.append(f"changelog.txt 顶部是 `Version: {top_ver}`，与 info.json 的 {version} 不一致")
+        if not m["thumbnail"]:
+            soft.append("没有 thumbnail.png（mod portal 会显示默认图）")
+
+        files, warns = collect_mod_files(m)
+        soft.extend(warns)
+        if not files:
+            hard.append("目录里没有可打包的文件")
+        for w in soft:
+            print(f"    [警告] {w}")
+        if hard and not args.force:
+            for h in hard:
+                print(f"    [错误] {h}")
+            print("    打包中止（确认无碍可加 --force）")
+            failures += len(hard)
+            continue
+
+        top = f"{name}_{version}"
+        target = out_dir / f"{top}.zip"
+        if args.dry_run:
+            print(f"    [dry-run] 将打包 {len(files)} 个文件 -> {target}")
+            for p in files:
+                print(f"        {p.relative_to(m['dir']).as_posix()}")
+            continue
+        if target.exists() and not args.force:
+            print(f"    [错误] {target} 已存在（要覆盖请加 --force）")
+            failures += 1
+            continue
+
+        write_zip(target, m, files, top, args.reproducible)
+        problems = verify_zip(target, m, top, len(files))
+        print(f"    [OK] {target}")
+        print(f"         {len(files)} 个文件，{target.stat().st_size} 字节"
+              f"{'，时间戳已固定（--reproducible）' if args.reproducible else ''}")
+        if problems:
+            for p in problems:
+                print(f"    [自检失败] {p}")
+            failures += len(problems)
+        else:
+            print(f"         自检通过：CRC ok、顶层目录 {top}/、info.json = {name} {version}")
+            print(f"         上传 portal 直接选这个 zip；本地测试可 "
+                  f"--out <游戏 mods 目录>")
+    return 1 if failures else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="modtool.py",
@@ -257,13 +417,24 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--dry-run", action="store_true", help="只显示将要做的改动")
     sp.add_argument("--force", action="store_true", help="允许降级/同版本、覆盖同名 changelog 条目")
     sp.set_defaults(func=cmd_bump)
+
+    sp = sub.add_parser("pack", help="打包成 <name>_<version>.zip（可直接上传或丢进 mods 目录）")
+    sp.add_argument("mod", nargs="?", help="模组目录名或 info.json 里的 name")
+    sp.add_argument("--all", action="store_true", help="对所有模组执行")
+    sp.add_argument("--out", help="输出目录（默认 <仓库>/dist；本地测试可指向游戏 mods 目录）")
+    sp.add_argument("--reproducible", action="store_true",
+                    help="固定 zip 内的时间戳与权限位（内容不变则字节不变）")
+    sp.add_argument("--dry-run", action="store_true", help="只列出将打包的文件，不写磁盘")
+    sp.add_argument("--force", action="store_true",
+                    help="忽略一致性错误（版本不一致等），并允许覆盖已存在的 zip")
+    sp.set_defaults(func=cmd_pack)
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command == "bump" and not args.all and not args.mod:
-        raise ModToolError("bump 需要指定模组，或用 --all 操作全部模组")
+    if args.command in ("bump", "pack") and not args.all and not args.mod:
+        raise ModToolError(f"{args.command} 需要指定模组，或用 --all 操作全部模组")
     return args.func(repo_root(args.repo), args)
 
 
