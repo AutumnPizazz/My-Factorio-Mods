@@ -1,0 +1,14 @@
+{
+  "name": "space-platform-thrust-physics",
+  "version": "0.1.2",
+  "title": "Space Platform Thrust Physics",
+  "author": "AutumnPizazz",
+  "contact": "",
+  "homepage": "",
+  "factorio_version": "2.1",
+  "dependencies": [
+    "base >= 2.1.0",
+    "space-age >= 2.1.0"
+  ],
+  "description": "Replaces the vanilla space platform thrust/speed formula with a physically intuitive model: thrust and mass determine acceleration while velocity produces a weak drag that counteracts thrust. The drag can depend on the platform's width, height and mass through configurable exponents, and every parameter is configurable in-game.\n\n用更符合物理直觉的模型替换原版太空平台推力-速度公式：推力与质量决定加速度，速度本身产生微弱阻力抵消推力。阻力的强弱可以按可配置的指数取决于飞船宽度、高度与质量；所有关键参数均可在游戏内配置。"
+}

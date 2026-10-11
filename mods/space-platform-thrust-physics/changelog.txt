@@ -1,0 +1,34 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2026-10-11
+  Changes:
+    - Added a mod thumbnail.
+    - README rewritten for players: what changes in game, speed tables, ready-made presets,
+      a full settings table and a compatibility/multiplayer FAQ. English + 简体中文.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2026-10-10
+  Features:
+    - Drag is no longer purely a function of speed: it can now also scale with the platform's
+      width, height and mass, each with its own configurable reference value and exponent.
+      drag = K * speed * |speed|^(n-1) * sign(speed) * (width/refW)^eW * (height/refH)^eH * (mass/refM)^eM
+    - Default is now "drag proportional to width" (width exponent 1, reference width 17 tiles),
+      which restores a familiar vanilla-like width penalty on top of the physics model.
+      Height and mass exponents default to 0 (ignored).
+    - New settings: sptp-reference-width, sptp-width-exponent, sptp-reference-height,
+      sptp-height-exponent, sptp-reference-weight-tons, sptp-weight-exponent (13 total).
+    - Localisation and README updated for the new options.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-10-10
+  Features:
+    - Replaces the vanilla space platform thrust/speed formula with a physics-style model:
+      acceleration = (thrust - drag) / mass / 60, where drag only depends on the current speed.
+    - Mass therefore only controls how quickly a platform accelerates; the top speed is
+      determined by the total thrust (and the drag coefficient) alone.
+    - 7 in-game (startup) settings: drag model (linear/quadratic), reference thrust,
+      reference top speed, drag strength, vanilla heavy-mass penalty toggle, hard speed cap
+      and a custom-expression escape hatch.
+    - English + Simplified Chinese localisation.
+---------------------------------------------------------------------------------------------------
