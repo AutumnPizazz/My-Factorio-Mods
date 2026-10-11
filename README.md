@@ -41,7 +41,7 @@ python3 tools/modtool.py bump Pizazz-CN patch      # 0.2.3 -> 0.2.4
 
 # 2. 填写 changelog.txt 顶部的骨架（把 TODO 换成真实内容）
 
-# 3. 打包（自动用 <模组名>_<版本号> 作 zip 内顶层目录，并做 CRC / 版本 / 目录结构自检）
+# 3. 打包（自动用 <模组名>_<版本号> 作 zip 内顶层目录，并做 CRC / 版本 / 目录结构 / PNG 合法性自检）
 python3 tools/modtool.py pack Pizazz-CN                          # -> dist/Pizazz-CN_0.2.4.zip
 python3 tools/modtool.py pack Pizazz-CN --out "<游戏 mods 目录>"   # 顺手装进本地游戏测试
 python3 tools/modtool.py pack --all --dry-run                    # 预演所有模组

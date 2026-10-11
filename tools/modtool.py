@@ -29,6 +29,9 @@
   * changelog.txt 已存在同版本条目时默认拒绝覆盖；确实要重写用 --force。
   * pack 会检查「目录名 == info.json 的 name」以及「changelog.txt 顶部版本 == info.json 的 version」，
     不一致时拒绝打包（确认无碍再加 --force）；缺 thumbnail.png / changelog.txt 只警告不拦截。
+  * pack 还会校验模组里的 .png 是不是真正的 PNG（签名 / IHDR / IEND）。缩略图被当成文本
+    做过换行转换、或存成 JPEG 后改名，都会让 mod portal 报
+    "Failed to read thumbnail.png image file"，所以这里直接拦下不让打包。
   * pack 默认跳过垃圾文件（__pycache__、.pyc、.DS_Store、编辑器临时文件等）；
     --reproducible 会固定 zip 内的时间戳与权限位，内容不变则产出的 zip 逐字节相同。
 """
@@ -39,6 +42,7 @@ import argparse
 import datetime as _dt
 import json
 import re
+import struct
 import sys
 import zipfile
 from pathlib import Path
@@ -47,6 +51,9 @@ SEP = "-" * 99  # 与 Factorio 官方 changelog 的分隔线等长
 VERSION_RE = re.compile(r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?$')
 INFO_VERSION_RE = re.compile(r'("version"\s*:\s*")([^"]*)(")')
 CHANGELOG_VERSION_RE = re.compile(r'^Version:\s*(\S+)\s*$', re.MULTILINE)
+
+# PNG 文件头；portal 报 "Failed to read thumbnail.png image file" 基本就是它不匹配
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 # 打包时要跳过的目录/文件名与后缀
 JUNK_DIRS = {"__pycache__", ".git", ".idea", ".vscode", ".svn"}
@@ -256,6 +263,34 @@ def changelog_top_version(path: Path) -> str | None:
     return m.group(1) if m else None
 
 
+def check_pngs(mod: dict, files: list[Path]) -> list[str]:
+    """校验 .png 是不是真正的 PNG（签名 / IHDR / IEND），返回问题列表。
+
+    踩过的坑：把 thumbnail.png 当成文本文件做过 CRLF→LF 转换，文件头变成
+    89504e470a1a0a（少了 0d），portal 上传时报 code 500 "Failed to read
+    thumbnail.png image file"。
+    """
+    problems: list[str] = []
+    for path in files:
+        if path.suffix.lower() != ".png":
+            continue
+        rel = path.relative_to(mod["dir"]).as_posix()
+        data = path.read_bytes()
+        if not data.startswith(PNG_SIGNATURE):
+            problems.append(
+                f"{rel} 不是合法 PNG：文件头是 {data[:8].hex()}，应为 {PNG_SIGNATURE.hex()}"
+                "（常见原因：被当成文本做过换行转换，或存成 JPEG/WEBP 后改名）"
+            )
+            continue
+        if len(data) < 33 or data[12:16] != b"IHDR":
+            problems.append(f"{rel} 缺 IHDR 块，PNG 已损坏")
+            continue
+        width, height = struct.unpack(">II", data[16:24])
+        if data[-8:-4] != b"IEND":
+            problems.append(f"{rel} 末尾没有 IEND 块（{width}x{height}），文件可能被截断")
+    return problems
+
+
 def collect_mod_files(mod: dict) -> tuple[list[Path], list[str]]:
     """收集要打包的文件（按相对路径排序），并返回顺带的警告。"""
     files: list[Path] = []
@@ -353,6 +388,7 @@ def cmd_pack(root: Path, args: argparse.Namespace) -> int:
 
         files, warns = collect_mod_files(m)
         soft.extend(warns)
+        hard.extend(check_pngs(m, files))
         if not files:
             hard.append("目录里没有可打包的文件")
         for w in soft:
