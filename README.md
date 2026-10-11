@@ -14,7 +14,7 @@ AutumnPizazz 的《异星工厂》(Factorio) 模组源码仓库。
 
 | 目录 | 模组名 | 版本 | factorio_version | 说明 |
 | --- | --- | --- | --- | --- |
-| `mods/Pizazz-CN` | Pizazz-CN | 0.2.3 | 2.1 | 自用汉化包（仅简体中文），按模组分文件放在 `locale/zh-CN/` |
+| `mods/Pizazz-CN` | Pizazz-CN | 0.2.4 | 2.1 | 自用汉化包（仅简体中文），按模组分文件放在 `locale/zh-CN/`，文件名 = 模组内部名 |
 | `mods/space-platform-thrust-physics` | space-platform-thrust-physics | 0.1.2 | 2.1 | 替换太空平台推力-速度公式：推力/质量决定加速度，速度产生阻力 |
 | `mods/ap-adjustment-for-onlyNauvis` | ap-adjustment-for-onlyNauvis | 1.0.0 | 2.0 | 新增钨弹系列（弹药/配方/科技/弹体） |
 | `mods/ap-adjustment-for-py` | ap-adjustment-for-py | 1.0.0 | 2.0 | （标题 Pizazzs's Adjustment For Py）调整 Pyanodons 的 `mdrn-loader` 配方 |

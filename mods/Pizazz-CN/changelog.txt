@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.4
+Date: 2026-10-11
+
+  新增翻译:
+    - better-belt-balancer（更好的传送带均衡器）  https://mods.factorio.com/mod/better-belt-balancer
+    - compressed-biter-squads（压缩虫族小队）  https://mods.factorio.com/mod/compressed-biter-squads
+  优化:
+    - 翻译文件名改为模组内部名（游戏按内部名读翻译，中文文件名只在人工查找时方便）
+    - 模组名称翻译.cfg 拆解归位：每个模组的名称/简介写回它自己的翻译文件
+    - 「星岩转化为石矿和铀矿」拆成 StoneFromOxide / MetallicAsteroidYield 两个文件
+    - wiki.cfg 并入 fcpu.cfg；修正 mini-solar-panel、更多场景等文件的 [mod-name] 键
+    - 清理文件内残留注释、行尾空白，统一文件末尾换行
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2026-10-11
 
