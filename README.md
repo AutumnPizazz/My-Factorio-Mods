@@ -56,3 +56,12 @@ python3 tools/modtool.py bump --all patch --dry-run  # 所有模组各进一个 
 ```
 
 其它选项：`--date YYYY-MM-DD`（changelog 日期，默认今天）、`--sections "新增翻译,优化"`、`--force`（允许版本号不变或倒退）。
+
+## 许可证
+
+本仓库的模组源码采用 **MIT License**（见 [`LICENSE`](LICENSE)）：可自由使用、修改、再分发、商用，只需保留版权声明与许可声明。
+
+两点例外与说明：
+
+- 模组中引用或派生的《异星工厂》(Factorio) 官方美术资源（例如 `mods/space-platform-thrust-physics` 的 `thumbnail.png` 基于游戏自带的推进器图标与星空贴图）版权归 **Wube Software** 所有，不属于本仓库 MIT 授权的范围，请遵循游戏自身的资产使用条款。
+- 汉化包 `mods/Pizazz-CN` 里的翻译文本由本人整理，同样以 MIT 授权；但其中每个模组的名称/简介仍属各原作者，翻译仅作兼容用途。
