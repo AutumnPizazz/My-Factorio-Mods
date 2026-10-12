@@ -14,3 +14,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# fcpu-continued：fCPU 0.4.65 的非官方 2.1 修订分支（私人自用）
+# 上游 licence.txt（Limited Distribution Only Licence）禁止修改后再分发，
+# 在取得原作者许可前，源码不入库、不打包、不推送
+mods/fcpu-continued/
