@@ -1,0 +1,10 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-11-12
+  Features:
+    - Added ingredient-free, low-damage blank bullet magazines for emergency gun turret defense.
+    - Assembling machines only; hand crafting and space platform manufacturing are prohibited.
+    - Supports Krastorio 2 realistic weapons on and off, including Krastorio 2 Spaced Out.
+    - Blank rounds receive normal bullet damage, shooting-speed research and turret bonuses.
+    - Configurable base damage and crafting time, with English and Simplified Chinese localisation.
+    - Disabled recycling, quality and productivity for blank ammunition production.

@@ -16,6 +16,7 @@ AutumnPizazz 的《异星工厂》(Factorio) 模组源码仓库。
 | --- | --- | --- | --- | --- |
 | `mods/Pizazz-CN` | Pizazz-CN | 0.2.4 | 2.1 | 自用汉化包（仅简体中文），按模组分文件放在 `locale/zh-CN/`，文件名 = 模组内部名 |
 | `mods/space-platform-thrust-physics` | space-platform-thrust-physics | 0.1.2 | 2.1 | 替换太空平台推力-速度公式：推力/质量决定加速度，速度产生阻力 |
+| `mods/ap-blank-ammo` | ap-blank-ammo | 0.1.0 | 2.1 | 零原料低伤害空包弹，仅机器制造、禁止太空平台生产，兼容 K2 与 Spaced Out |
 | `mods/ap-adjustment-for-onlyNauvis` | ap-adjustment-for-onlyNauvis | 1.0.0 | 2.0 | 新增钨弹系列（弹药/配方/科技/弹体） |
 | `mods/ap-adjustment-for-py` | ap-adjustment-for-py | 1.0.0 | 2.0 | （标题 Pizazzs's Adjustment For Py）调整 Pyanodons 的 `mdrn-loader` 配方 |
 | `mods/early-bulk-inserter-for-py` | early-bulk-inserter-for-py | 1.0.0 | 2.0 | （标题 Early Bulk Inserter for Py）让 Pyanodons 的 Bulk Inserter 更早、更便宜 |
@@ -68,5 +69,5 @@ python3 tools/modtool.py pack --all --reproducible   # 全部打包，源码不�
 
 两点例外与说明：
 
-- 模组中引用或派生的《异星工厂》(Factorio) 官方美术资源（例如 `mods/space-platform-thrust-physics` 的 `thumbnail.png` 基于游戏自带的推进器图标与星空贴图）版权归 **Wube Software** 所有，不属于本仓库 MIT 授权的范围，请遵循游戏自身的资产使用条款。
+- 模组中引用或派生的《异星工厂》(Factorio) 官方美术资源（例如 `mods/space-platform-thrust-physics` 的 `thumbnail.png` 基于游戏自带的推进器图标与星空贴图，`mods/ap-blank-ammo` 的弹匣图标和缩略图派生自游戏自带图标）版权归 **Wube Software** 所有，不属于本仓库 MIT 授权的范围，请遵循游戏自身的资产使用条款。
 - 汉化包 `mods/Pizazz-CN` 里的翻译文本由本人整理，同样以 MIT 授权；但其中每个模组的名称/简介仍属各原作者，翻译仅作兼容用途。

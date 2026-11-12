@@ -1,0 +1,16 @@
+{
+  "name": "ap-blank-ammo",
+  "version": "0.1.0",
+  "title": "Air-Made Blank Ammo",
+  "author": "AutumnPizazz",
+  "factorio_version": "2.1",
+  "dependencies": [
+    "base >= 2.1.22",
+    "? space-age",
+    "? Krastorio2 >= 2.1.4",
+    "? Krastorio2-spaced-out >= 2.0.19",
+    "? bullet-trails",
+    "? combat-mechanics-overhaul"
+  ],
+  "description": "Low-damage bullet magazines made without ingredients in assembling machines. Emergency ammunition for gun turrets in resource-poor environments. Cannot be hand-crafted or manufactured on space platforms. Supports Krastorio 2 and Krastorio 2 Spaced Out."
+}
